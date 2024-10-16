@@ -58,13 +58,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
       price: 100.00,
     ),
     Product(
-      name: 'Джерси Кевина Дюранта',
+      name: 'Air jordan 1 blue',
       description: 'Удобная повседневная обувь.',
       imageUrl: 'assets/images/Air_jordan_1_blue.jpg',
       price: 230.00,
     ),
     Product(
-      name: 'Air jordan 1 blue',
+      name: 'Джерси Кевина Дюранта',
       description: 'Оригинальная игровая джерси.',
       imageUrl: 'assets/images/Jersey_KD.jpg',
       price: 180.00,
