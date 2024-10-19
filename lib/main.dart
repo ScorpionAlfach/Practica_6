@@ -1,4 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; 
+import 'catalog.dart';
+import 'bucket.dart';
+import 'profile.dart';
+import 'product.dart';
+import 'cart_screen.dart';
 
 void main() {
   runApp(BasketballStoreApp());
@@ -11,33 +16,27 @@ class BasketballStoreApp extends StatelessWidget {
       title: 'Basketball Store',
       theme: ThemeData(
         primarySwatch: Colors.orange,
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: Colors.white, // Цвет фона
+          selectedItemColor: const Color.fromARGB(255, 103, 101, 96), // Цвет активных иконок
+          unselectedItemColor: const Color.fromARGB(206, 167, 166, 164), // Цвет неактивных иконок
+        ),
       ),
-      home: ProductListScreen(),
+      home: MainScreen(),
     );
   }
 }
 
-class Product {
-  final String name;
-  final String description;
-  final String imageUrl;
-  final double price;
-
-  Product({
-    required this.name,
-    required this.description,
-    required this.imageUrl,
-    required this.price,
-  });
-}
-
-class ProductListScreen extends StatefulWidget {
+class MainScreen extends StatefulWidget {
   @override
-  _ProductListScreenState createState() => _ProductListScreenState();
+  _MainScreenState createState() => _MainScreenState();
 }
 
-class _ProductListScreenState extends State<ProductListScreen> {
-  // Список товаров
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 0;
+  final Set<Product> _favorites = Set<Product>();
+  final List<Product> _cart = [];
+
   List<Product> products = [
     Product(
       name: 'Air jordan 1 red',
@@ -71,10 +70,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
     ),
   ];
 
-  // Set для хранения избранных товаров
-  final Set<Product> _favorites = Set<Product>();
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
-  // Метод для добавления или удаления товара из избранного
   void _toggleFavorite(Product product) {
     setState(() {
       if (_favorites.contains(product)) {
@@ -85,117 +86,64 @@ class _ProductListScreenState extends State<ProductListScreen> {
     });
   }
 
-  // Метод для удаления товара
-  void _removeProduct(Product product) {
+  void _addToCart(Product product) {
     setState(() {
-      products.remove(product);
+      _cart.add(product);
     });
   }
 
-  // Навигация на страницу с карточкой товара
-  void _navigateToProductDetail(Product product) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ProductDetailScreen(product: product),
-      ),
-    );
+  void _removeFromCart(Product product) {
+    setState(() {
+      _cart.remove(product);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> _pages = [
+      ProductListScreen(
+        products: products,
+        toggleFavorite: _toggleFavorite,
+        addToCart: _addToCart,
+        favorites: _favorites,
+      ),
+      FavoriteScreen(
+        favorites: _favorites,
+        toggleFavorite: _toggleFavorite,
+      ),
+      CartScreen(
+        cartItems: _cart,
+        removeFromCart: _removeFromCart,
+      ),
+      ProfileScreen(),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Basketball Store'),
       ),
-      body: ListView.builder(
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          final product = products[index];
-          final isFavorite = _favorites.contains(product);
-
-          return ListTile(
-            leading: Image.asset(product.imageUrl, width: 50, height: 50),
-            title: Text(product.name),
-            subtitle: Text(
-                '${product.description}\nPrice: \$${product.price.toStringAsFixed(2)}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : null,
-                  ),
-                  onPressed: () => _toggleFavorite(product),
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete),
-                  color: const Color.fromARGB(255, 52, 51, 51),
-                  onPressed: () => _removeProduct(product), // Удаление товара
-                ),
-              ],
-            ),
-            onTap: () => _navigateToProductDetail(
-                product), // Переход на страницу товара при клике
-          );
-        },
-      ),
-    );
-  }
-}
-
-class ProductDetailScreen extends StatelessWidget {
-  final Product product;
-
-  // Конструктор для получения данных товара
-  ProductDetailScreen({required this.product});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(product.name),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image.asset(product.imageUrl, height: 200, fit: BoxFit.cover),
-            SizedBox(height: 16),
-            Text(
-              product.name,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              product.description,
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Price: \$${product.price.toStringAsFixed(2)}',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                // Добавление в корзину
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${product.name} добавлен в корзину')),
-                );
-              },
-              child: Text('Добавить в корзину'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 112, 212, 234),
-                padding: EdgeInsets.symmetric(vertical: 16),
-                minimumSize:
-                    Size(double.infinity, 50), // Ширина кнопки на весь экран
-              ),
-            ),
-          ],
-        ),
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Каталог',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Избранное',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart_outlined),
+            label: 'Корзина',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Профиль',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

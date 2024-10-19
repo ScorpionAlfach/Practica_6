@@ -59,6 +59,7 @@ flutter:
     - assets/images/Wilson.jpg
     - assets/images/Air_jordan_1_blue.jpg
     - assets/images/Jersey_KD.jpg
+    - assets/images/enot.jpg
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
